@@ -102,24 +102,57 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost("reset-password")]
-    public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
     {
         try
         {
-            if (string.IsNullOrEmpty(request.Email))
-                return BadRequest(new { message = "Email alanı zorunludur" });
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            
+            if (user == null)
+                return BadRequest(new { message = "Bu email adresi ile kayıtlı kullanıcı bulunamadı" });
 
-            // TODO: Check if user exists
-            // TODO: Generate reset token
-            // TODO: Send reset email
+            return Ok(new { message = "Email doğrulandı" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Email doğrulama sırasında hata oluştu");
+            return BadRequest(new { message = "Email doğrulama işlemi başarısız" });
+        }
+    }
 
-            return Ok(new { message = "Parola sıfırlama talimatları email adresinize gönderildi" });
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            
+            if (user == null)
+                return BadRequest(new { message = "Kullanıcı bulunamadı" });
+
+            // Parola kriterleri kontrolü
+            if (!IsValidPassword(request.NewPassword))
+                return BadRequest(new { message = "Parola en az 8 karakter uzunluğunda olmalı, büyük-küçük harf ve rakam içermelidir" });
+
+            // Parola eşleşme kontrolü
+            if (request.NewPassword != request.ConfirmPassword)
+                return BadRequest(new { message = "Parolalar eşleşmiyor" });
+
+            // Parolayı şifrele ve güncelle
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            // TODO: Parola değişikliği hakkında email gönder
+
+            return Ok(new { message = "Parolanız başarıyla güncellendi" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Parola sıfırlama sırasında hata oluştu");
-            return BadRequest(new { message = "Parola sıfırlama başarısız" });
+            return BadRequest(new { message = "Parola sıfırlama işlemi başarısız" });
         }
     }
 
@@ -225,9 +258,16 @@ public class LoginRequest
     public required string Password { get; set; }
 }
 
+public class VerifyEmailRequest
+{
+    public required string Email { get; set; }
+}
+
 public class ResetPasswordRequest
 {
-    public string Email { get; set; }
+    public required string Email { get; set; }
+    public required string NewPassword { get; set; }
+    public required string ConfirmPassword { get; set; }
 }
 
 public class UpdateProfileRequest

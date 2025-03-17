@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DentalTracker.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250315005423_AddIdentityTables")]
-    partial class AddIdentityTables
+    [Migration("20250317012745_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
