@@ -16,6 +16,7 @@ import {
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { tr } from 'date-fns/locale';
+import DailyTip from '../DailyTip';
 
 interface Activity {
   id: string;
@@ -159,130 +160,135 @@ const StatusTab = () => {
   };
 
   return (
-    <Grid container spacing={3}>
-      {/* Son 7 günlük aktiviteler */}
-      <Grid item xs={12}>
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Son 7 Gün Aktiviteleri
-          </Typography>
-          {activities.map((activity) => (
-            <Box key={activity.id} sx={{ mb: 2 }}>
-              <Typography>
-                Tarih: {new Date(activity.activityDate).toLocaleDateString('tr-TR')}
-                {' | '}Süre: {activity.duration}
-                {' | '}Durum: {activity.isCompleted ? 'Tamamlandı' : 'Tamamlanmadı'}
-              </Typography>
-            </Box>
-          ))}
-        </Paper>
-      </Grid>
-
-      {/* Hedef aktivite formları */}
-      {goals.map((goal) => (
-        <Grid item xs={12} md={6} key={goal.id}>
+    <Box sx={{ width: '100%' }}>
+      <Grid container spacing={4}>
+        <Grid item xs={12}>
+          <DailyTip />
+        </Grid>
+        {/* Son 7 günlük aktiviteler */}
+        <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              {goal.title}
+              Son 7 Gün Aktiviteleri
             </Typography>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <DatePicker
-                  label="Tarih"
-                  value={selectedDate}
-                  onChange={setSelectedDate}
-                />
-                <TimePicker
-                  label="Saat"
-                  value={selectedTime}
-                  onChange={setSelectedTime}
-                />
-                <TextField
-                  label="Süre (dakika)"
-                  type="number"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isCompleted}
-                      onChange={(e) => setIsCompleted(e.target.checked)}
-                    />
-                  }
-                  label="Tamamlandı"
-                />
-                <Button
-                  variant="contained"
-                  onClick={() => handleActivitySubmit(goal.id)}
-                >
-                  Kaydet
-                </Button>
+            {activities.map((activity) => (
+              <Box key={activity.id} sx={{ mb: 2 }}>
+                <Typography>
+                  Tarih: {new Date(activity.activityDate).toLocaleDateString('tr-TR')}
+                  {' | '}Süre: {activity.duration}
+                  {' | '}Durum: {activity.isCompleted ? 'Tamamlandı' : 'Tamamlanmadı'}
+                </Typography>
               </Box>
-            </LocalizationProvider>
+            ))}
           </Paper>
         </Grid>
-      ))}
 
-      {/* Not ekleme formu */}
-      <Grid item xs={12}>
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Not Ekle
-          </Typography>
-          <Box component="form" onSubmit={handleNoteSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Açıklama"
-              multiline
-              rows={4}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-            <input
-              accept="image/*"
-              type="file"
-              onChange={(e) => e.target.files && setImage(e.target.files[0])}
-              style={{ display: 'none' }}
-              id="image-input"
-            />
-            <label htmlFor="image-input">
-              <Button variant="outlined" component="span">
-                Görsel Yükle
-              </Button>
-            </label>
-            <Button type="submit" variant="contained">
-              Not Ekle
-            </Button>
-          </Box>
-        </Paper>
-      </Grid>
+        {/* Hedef aktivite formları */}
+        {goals.map((goal) => (
+          <Grid item xs={12} md={6} key={goal.id}>
+            <Paper sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                {goal.title}
+              </Typography>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <DatePicker
+                    label="Tarih"
+                    value={selectedDate}
+                    onChange={setSelectedDate}
+                  />
+                  <TimePicker
+                    label="Saat"
+                    value={selectedTime}
+                    onChange={setSelectedTime}
+                  />
+                  <TextField
+                    label="Süre (dakika)"
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isCompleted}
+                        onChange={(e) => setIsCompleted(e.target.checked)}
+                      />
+                    }
+                    label="Tamamlandı"
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => handleActivitySubmit(goal.id)}
+                  >
+                    Kaydet
+                  </Button>
+                </Box>
+              </LocalizationProvider>
+            </Paper>
+          </Grid>
+        ))}
 
-      {/* Günlük öneri */}
-      <Grid item xs={12}>
-        <Card>
-          <CardContent>
+        {/* Not ekleme formu */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Günün Önerisi
+              Not Ekle
             </Typography>
-            <Typography variant="body1">
-              {tip || 'Yükleniyor...'}
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid>
+            <Box component="form" onSubmit={handleNoteSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                label="Açıklama"
+                multiline
+                rows={4}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+              <input
+                accept="image/*"
+                type="file"
+                onChange={(e) => e.target.files && setImage(e.target.files[0])}
+                style={{ display: 'none' }}
+                id="image-input"
+              />
+              <label htmlFor="image-input">
+                <Button variant="outlined" component="span">
+                  Görsel Yükle
+                </Button>
+              </label>
+              <Button type="submit" variant="contained">
+                Not Ekle
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
 
-      {/* Hata ve başarı mesajları */}
-      {error && (
+        {/* Günlük öneri */}
         <Grid item xs={12}>
-          <Alert severity="error">{error}</Alert>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Günün Önerisi
+              </Typography>
+              <Typography variant="body1">
+                {tip || 'Yükleniyor...'}
+              </Typography>
+            </CardContent>
+          </Card>
         </Grid>
-      )}
-      {success && (
-        <Grid item xs={12}>
-          <Alert severity="success">{success}</Alert>
-        </Grid>
-      )}
-    </Grid>
+
+        {/* Hata ve başarı mesajları */}
+        {error && (
+          <Grid item xs={12}>
+            <Alert severity="error">{error}</Alert>
+          </Grid>
+        )}
+        {success && (
+          <Grid item xs={12}>
+            <Alert severity="success">{success}</Alert>
+          </Grid>
+        )}
+      </Grid>
+    </Box>
   );
 };
 

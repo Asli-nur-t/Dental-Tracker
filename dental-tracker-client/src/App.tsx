@@ -7,6 +7,7 @@ import { tr } from 'date-fns/locale';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Goals from './pages/Goals';
 import Register from './pages/Register';
 import ResetPassword from './pages/ResetPassword';
 
@@ -21,7 +22,6 @@ const theme = createTheme({
   },
 });
 
-// Giriş kontrolü için özel route komponenti
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -49,6 +49,7 @@ function App() {
               }
             >
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/goals" element={<Goals />} />
               <Route index element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Routes>
@@ -58,4 +59,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 

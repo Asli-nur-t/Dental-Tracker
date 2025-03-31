@@ -1,66 +1,43 @@
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Menu as MenuIcon, Dashboard as DashboardIcon, Flag as GoalsIcon } from '@mui/icons-material';
 import { useState } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
-import {
-  AppBar,
-  Box,
-  CssBaseline,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Typography,
-  Divider,
-  Menu,
-  MenuItem,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  Assignment as GoalsIcon,
-  Person as ProfileIcon,
-  ExitToApp as LogoutIcon,
-} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 const Layout = () => {
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
+  const navigate = useNavigate();
 
   const menuItems = [
     { text: 'Ana Sayfa', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Hedeflerim', icon: <GoalsIcon />, path: '/goals' },
   ];
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   const drawer = (
     <div>
-      <Toolbar />
+      <Toolbar>
+        <Typography variant="h6" noWrap>
+          Dental Tracker
+        </Typography>
+      </Toolbar>
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem button key={item.text} onClick={() => navigate(item.path)}>
+          <ListItem 
+            button 
+            key={item.text} 
+            onClick={() => {
+              navigate(item.path);
+              setMobileOpen(false);
+            }}
+          >
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
           </ListItem>
@@ -71,8 +48,13 @@ const Layout = () => {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { sm: `${drawerWidth}px` },
+        }}
+      >
         <Toolbar>
           <IconButton
             color="inherit"
@@ -83,40 +65,12 @@ const Layout = () => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div">
             Dental Tracker
           </Typography>
-          <IconButton
-            size="large"
-            edge="end"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleProfileMenuOpen}
-            color="inherit"
-          >
-            <ProfileIcon />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleProfileMenuClose}
-          >
-            <MenuItem onClick={() => navigate('/profile')}>Profilim</MenuItem>
-            <MenuItem onClick={handleLogout}>Çıkış Yap</MenuItem>
-          </Menu>
         </Toolbar>
       </AppBar>
+      
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -146,6 +100,7 @@ const Layout = () => {
           {drawer}
         </Drawer>
       </Box>
+      
       <Box
         component="main"
         sx={{
