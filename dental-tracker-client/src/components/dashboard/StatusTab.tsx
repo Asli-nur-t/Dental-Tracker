@@ -45,7 +45,7 @@ const StatusTab = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<Date | null>(new Date());
   const [duration, setDuration] = useState('');
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [completedGoals, setCompletedGoals] = useState<{ [key: string]: boolean }>({});
   const [note, setNote] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [tip, setTip] = useState('');
@@ -78,17 +78,29 @@ const StatusTab = () => {
   const fetchGoals = async () => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
+        return;
+      }
+
       const response = await fetch('http://localhost:5164/api/DentalGoal', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
-      if (response.ok) {
-        const data = await response.json();
-        setGoals(data);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Hedefler getirilemedi');
       }
+
+      const data = await response.json();
+      setGoals(data);
+      setError('');
     } catch (error) {
       console.error('Hedefler getirilirken hata oluştu:', error);
+      setError(error instanceof Error ? error.message : 'Hedefler getirilirken bir hata oluştu');
     }
   };
 
@@ -122,13 +134,15 @@ const StatusTab = () => {
           goalId,
           activityDate: selectedDate,
           duration: duration,
-          isCompleted,
+          isCompleted: completedGoals[goalId] || false,
         }),
       });
 
       if (response.ok) {
         setSuccess('Aktivite başarıyla kaydedildi');
         fetchLastSevenDaysActivities();
+        setDuration('');
+        setCompletedGoals(prev => ({ ...prev, [goalId]: false }));
       } else {
         setError('Aktivite kaydedilemedi');
       }
@@ -314,8 +328,11 @@ const StatusTab = () => {
                         <FormControlLabel
                           control={
                             <Checkbox
-                              checked={isCompleted}
-                              onChange={(e) => setIsCompleted(e.target.checked)}
+                              checked={completedGoals[goal.id] || false}
+                              onChange={(e) => setCompletedGoals(prev => ({
+                                ...prev,
+                                [goal.id]: e.target.checked
+                              }))}
                             />
                           }
                           label="Tamamlandı"

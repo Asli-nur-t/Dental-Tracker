@@ -41,7 +41,7 @@ const SideMenu = ({ isOpen, onToggle }: SideMenuProps) => {
 
   const menuItems: MenuItem[] = [
     { text: 'Ana Sayfa', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Hedeflerim', icon: <FlagIcon />, path: '/goals' },
+    { text: 'Hedeflerim', icon: <FlagIcon />, path: '/dashboard/goals' },
     { text: 'Çıkış Yap', icon: <LogoutIcon />, onClick: handleLogout },
   ];
 

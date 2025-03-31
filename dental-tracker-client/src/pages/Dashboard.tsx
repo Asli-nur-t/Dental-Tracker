@@ -32,12 +32,13 @@ const Dashboard = () => {
             minHeight: 'calc(100vh - 48px)',
             background: 'white',
             overflow: 'hidden',
+            p: 3
           }}
         >
           <Routes>
             <Route path="/" element={<StatusTab />} />
-            <Route path="/dashboard" element={<StatusTab />} />
             <Route path="/goals" element={<GoalsTab />} />
+            <Route path="*" element={<StatusTab />} />
           </Routes>
         </Paper>
       </Box>
