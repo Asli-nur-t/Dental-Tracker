@@ -76,8 +76,8 @@ public class DentalGoalController : ControllerBase
                 UserId = userId,
                 Title = request.Title,
                 Description = request.Description,
-                Period = request.Period,
-                Priority = request.Priority,
+                Period = (Models.Enums.GoalPeriod)request.Period,
+                Priority = (Models.Enums.GoalPriority)request.Priority,
                 CreatedAt = DateTime.UtcNow
             };
 
