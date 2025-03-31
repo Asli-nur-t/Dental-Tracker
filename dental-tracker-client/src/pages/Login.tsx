@@ -28,25 +28,42 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5164/api/user/login', {
+      const apiUrl = 'http://localhost:5164/api/user/login';
+      console.log('API isteği gönderiliyor:', apiUrl); // Debug için
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(formData),
+        mode: 'cors', // CORS modunu açıkça belirt
+        credentials: 'include' // Cookie'leri dahil et
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/dashboard');
-      } else {
-        setError(data.message || 'Giriş başarısız');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Giriş işlemi başarısız');
       }
+
+      const data = await response.json();
+      console.log('API yanıtı:', data);
+
+      if (!data.token) {
+        throw new Error('Token alınamadı');
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/dashboard');
     } catch (err) {
-      setError('Sunucu bağlantısında hata oluştu');
+      console.error('Login hatası:', err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Sunucu bağlantısında hata oluştu. Lütfen daha sonra tekrar deneyin.');
+      }
     } finally {
       setLoading(false);
     }

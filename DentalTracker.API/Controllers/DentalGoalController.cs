@@ -89,16 +89,16 @@ public class DentalGoalController : ControllerBase
 
 public class CreateGoalRequest
 {
-    public string Title { get; set; }
-    public string Description { get; set; }
+    public required string Title { get; set; }
+    public required string Description { get; set; }
     public GoalPeriod Period { get; set; }
     public GoalPriority Priority { get; set; }
 }
 
 public class UpdateGoalRequest
 {
-    public string Title { get; set; }
-    public string Description { get; set; }
+    public required string Title { get; set; }
+    public required string Description { get; set; }
     public GoalPeriod Period { get; set; }
     public GoalPriority Priority { get; set; }
 }
