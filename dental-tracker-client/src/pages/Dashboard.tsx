@@ -1,119 +1,47 @@
 import { useState } from 'react';
-import {
-  Box,
-  Container,
-  Tabs,
-  Tab,
-  Paper,
-} from '@mui/material';
+import { Box, Paper } from '@mui/material';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import StatusTab from '../components/dashboard/StatusTab';
 import GoalsTab from '../components/dashboard/GoalsTab';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`dashboard-tabpanel-${index}`}
-      aria-labelledby={`dashboard-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: { xs: 2, sm: 3 } }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
+import SideMenu from '../components/SideMenu';
 
 const Dashboard = () => {
-  const [tabValue, setTabValue] = useState(0); // 0: Durum, 1: Hedefler
+  const [menuOpen, setMenuOpen] = useState(true);
+  const location = useLocation();
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
   };
 
   return (
-    <Container 
-      maxWidth={false} 
-      sx={{ 
-        py: 4,
-        px: { xs: 2, sm: 4 },
-        maxWidth: '1600px',
-        margin: '0 auto',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Paper 
-        sx={{ 
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: 4,
-          overflow: 'hidden',
-          background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#f5f7f9', p: 3 }}>
+      <SideMenu isOpen={menuOpen} onToggle={toggleMenu} />
+      
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          transition: 'margin-left 0.3s ease',
+          marginLeft: menuOpen ? '280px' : 0,
         }}
-        elevation={3}
       >
-        <Box 
-          sx={{ 
-            borderBottom: 1, 
-            borderColor: 'divider',
-            px: { xs: 2, sm: 3 },
-            pt: { xs: 2, sm: 3 },
-            background: '#fff'
+        <Paper
+          elevation={4}
+          sx={{
+            borderRadius: '16px',
+            minHeight: 'calc(100vh - 48px)',
+            background: 'white',
+            overflow: 'hidden',
           }}
         >
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange}
-            aria-label="dashboard tabs"
-            sx={{
-              '& .MuiTab-root': {
-                fontSize: { xs: '1rem', sm: '1.1rem' },
-                fontWeight: 500,
-                textTransform: 'none',
-                minHeight: 48,
-                py: 1,
-                px: 3
-              },
-              '& .Mui-selected': {
-                color: '#1976d2',
-                fontWeight: 600
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: '#1976d2',
-                height: 3,
-                borderRadius: '3px 3px 0 0'
-              }
-            }}
-          >
-            <Tab label="Durum" />
-            <Tab label="Hedefler" />
-          </Tabs>
-        </Box>
-
-        <Box sx={{ flex: 1, overflow: 'auto' }}>
-          <TabPanel value={tabValue} index={0}>
-            <StatusTab />
-          </TabPanel>
-          <TabPanel value={tabValue} index={1}>
-            <GoalsTab />
-          </TabPanel>
-        </Box>
-      </Paper>
-    </Container>
+          <Routes>
+            <Route path="/" element={<StatusTab />} />
+            <Route path="/dashboard" element={<StatusTab />} />
+            <Route path="/goals" element={<GoalsTab />} />
+          </Routes>
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 

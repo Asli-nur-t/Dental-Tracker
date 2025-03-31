@@ -1,194 +1,277 @@
-import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useState } from 'react';
 import {
-  Box,
-  Card,
-  CardContent,
+  Container,
+  Paper,
   TextField,
   Button,
   Typography,
-  Link,
+  Box,
   Alert,
+  Link,
   InputAdornment,
   IconButton,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { Visibility, VisibilityOff, LocalHospital } from '@mui/icons-material';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError('');
-
+    
     try {
-      const apiUrl = 'http://localhost:5164/api/user/login';
-      console.log('API isteği gönderiliyor:', apiUrl); // Debug için
-
-      const response = await fetch(apiUrl, {
+      const response = await fetch('http://localhost:5164/api/User/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
-        body: JSON.stringify(formData),
-        mode: 'cors', // CORS modunu açıkça belirt
-        credentials: 'include' // Cookie'leri dahil et
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Giriş işlemi başarısız');
-      }
-
+  
       const data = await response.json();
-      console.log('API yanıtı:', data);
-
-      if (!data.token) {
-        throw new Error('Token alınamadı');
+  
+      if (!response.ok) {
+        console.error('Login hatası:', data);
+        setError(data.message || 'Giriş yapılırken bir hata oluştu');
+        return;
       }
-
+  
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
       navigate('/dashboard');
-    } catch (err) {
-      console.error('Login hatası:', err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Sunucu bağlantısında hata oluştu. Lütfen daha sonra tekrar deneyin.');
-      }
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Login hatası:', error);
+      setError('Sunucuya bağlanırken bir hata oluştu');
     }
   };
-
   return (
-    <Box
+    <Container 
+      maxWidth={false}
       sx={{
-        width: '100vw',
-        height: '100vh',
+        minHeight: '100vh',
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
-        position: 'fixed',
-        top: 0,
-        left: 0,
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+        p: 2
       }}
     >
-      <Card
+      <Paper
+        elevation={24}
         sx={{
-          width: '90%',
-          maxWidth: '400px',
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          p: { xs: 3, sm: 6 },
+          width: '100%',
+          maxWidth: '450px',
+          borderRadius: 4,
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          animation: 'slideUp 0.5s ease-out',
+          '@keyframes slideUp': {
+            '0%': {
+              transform: 'translateY(20px)',
+              opacity: 0
+            },
+            '100%': {
+              transform: 'translateY(0)',
+              opacity: 1
+            }
+          }
         }}
       >
-        <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+        <Box
+          sx={{
+            mb: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          <Logo size={isMobile ? "medium" : "large"} />
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 500,
+              textAlign: 'center',
+              animation: 'fadeIn 0.5s ease-in-out',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}
+          >
+            Hoş Geldiniz
+          </Typography>
+        </Box>
+
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              animation: 'shake 0.5s ease-in-out',
+              '@keyframes shake': {
+                '0%, 100%': { transform: 'translateX(0)' },
+                '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+                '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' }
+              }
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Box 
+          component="form" 
+          onSubmit={handleSubmit}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3
+          }}
+        >
+          <TextField
+            fullWidth
+            label="E-posta"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            type="email"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email sx={{ color: 'action.active' }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                }
+              }
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="Şifre"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            type={showPassword ? 'text' : 'password'}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock sx={{ color: 'action.active' }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                }
+              }
+            }}
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{
+              mt: 2,
+              py: 1.5,
+              borderRadius: 2,
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              textTransform: 'none',
+              background: 'linear-gradient(45deg, #1976d2 30%, #2196f3 90%)',
+              transition: 'all 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 8px 16px rgba(25, 118, 210, 0.3)'
+              }
+            }}
+          >
+            Giriş Yap
+          </Button>
+
           <Box
             sx={{
               display: 'flex',
-              flexDirection: 'column',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              mb: 4,
+              flexWrap: 'wrap',
+              gap: 1,
+              mt: 2
             }}
           >
-            <Box
+            <Link
+              href="/register"
               sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                backgroundColor: 'primary.main',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 500,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  color: 'primary.dark',
+                  textDecoration: 'underline'
+                }
               }}
             >
-              <LocalHospital sx={{ fontSize: 40, color: 'white' }} />
-            </Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-              Giriş Yap
-            </Typography>
-          </Box>
-
-          <Box component="form" onSubmit={handleSubmit}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Adresi"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Parola"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              Hesap Oluştur
+            </Link>
+            <Link
+              href="/reset-password"
+              sx={{
+                color: 'text.secondary',
+                textDecoration: 'none',
+                fontWeight: 500,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  color: 'primary.main',
+                  textDecoration: 'underline'
+                }
               }}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2, py: 1.5 }}
-              disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Giriş Yap'}
-            </Button>
-
-            <Box sx={{ 
-              mt: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 1
-            }}>
-              <Link component={RouterLink} to="/register" sx={{ color: 'primary.main' }}>
-                Hesabınız yok mu? Kayıt olun
-              </Link>
-              <Link component={RouterLink} to="/reset-password" sx={{ color: 'primary.main' }}>
-                Parolanızı mı unuttunuz?
-              </Link>
-            </Box>
+              Şifremi Unuttum
+            </Link>
           </Box>
-        </CardContent>
-      </Card>
-    </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 
