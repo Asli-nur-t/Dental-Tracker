@@ -1,26 +1,28 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Container,
   Box,
+  Card,
+  CardContent,
   TextField,
   Button,
   Typography,
   Link,
   Alert,
-  CircularProgress,
-  Paper
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
-import { FaTooth, FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
+import { Visibility, VisibilityOff, LocalHospital } from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -31,8 +33,9 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(formData),
       });
+
       const data = await response.json();
 
       if (response.ok) {
@@ -40,73 +43,136 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/dashboard');
       } else {
-        setError(data.message);
+        setError(data.message || 'Giriş başarısız');
       }
     } catch (err) {
-      setError('Giriş işlemi sırasında bir hata oluştu');
+      setError('Sunucu bağlantısında hata oluştu');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-      <Paper elevation={3} sx={{ padding: 4, textAlign: 'center', borderRadius: 3, backgroundColor: '#e3f2fd', maxWidth: 400, width: '100%' }}>
-        <FaTooth size={50} color="#1976d2" style={{ marginBottom: 10 }} />
-        <Typography component="h1" variant="h5" sx={{ color: '#1976d2' }}>
-          Giriş Yap
-        </Typography>
-        {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', borderRadius: 1, padding: 1, mb: 2 }}>
-            <FaEnvelope color="#1976d2" style={{ marginRight: 8 }} />
+    <Box
+      sx={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+      }}
+    >
+      <Card
+        sx={{
+          width: '90%',
+          maxWidth: '400px',
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mb: 4,
+            }}
+          >
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                backgroundColor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2,
+              }}
+            >
+              <LocalHospital sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+              Giriş Yap
+            </Typography>
+          </Box>
+
+          <Box component="form" onSubmit={handleSubmit}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
             <TextField
+              margin="normal"
               required
               fullWidth
+              id="email"
               label="Email Adresi"
               name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-              variant="standard"
+              autoComplete="email"
+              autoFocus
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              sx={{ mb: 2 }}
             />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', borderRadius: 1, padding: 1, mb: 2 }}>
-            <FaLock color="#1976d2" style={{ marginRight: 8 }} />
+
             <TextField
+              margin="normal"
               required
               fullWidth
-              label="Parola"
-              type="password"
               name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              variant="standard"
+              label="Parola"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2, py: 1.5 }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Giriş Yap'}
+            </Button>
+
+            <Box sx={{ 
+              mt: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              <Link component={RouterLink} to="/register" sx={{ color: 'primary.main' }}>
+                Hesabınız yok mu? Kayıt olun
+              </Link>
+              <Link component={RouterLink} to="/reset-password" sx={{ color: 'primary.main' }}>
+                Parolanızı mı unuttunuz?
+              </Link>
+            </Box>
           </Box>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 2, mb: 2, backgroundColor: '#1976d2' }}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : 'Giriş Yap'}
-          </Button>
-          <Box sx={{ textAlign: 'center' }}>
-            <Link href="/register" variant="body2" sx={{ color: '#1976d2' }}>
-              {"Hesabınız yok mu? Kayıt olun"}
-            </Link>
-            <br />
-            <Link href="/reset-password" variant="body2" sx={{ color: '#1976d2' }}>
-              {"Parolanızı mı unuttunuz?"}
-            </Link>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 
-export default Login;
+export default Login; 

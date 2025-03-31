@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, Box } from '@mui/material';
+import { ThemeProvider, createTheme, Box, Container } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -30,16 +30,19 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={tr}>
-          <Box sx={{ 
-            minHeight: '100vh',
-            width: '100%',
-            margin: 0,
-            padding: 0,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-          }}>
+          <Box
+            sx={{
+              width: '100vw',
+              height: '100vh',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
             <Routes>
               <Route path="/" element={<Navigate to="/login" />} />
               <Route path="/login" element={<Login />} />

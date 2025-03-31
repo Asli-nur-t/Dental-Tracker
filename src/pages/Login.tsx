@@ -53,36 +53,48 @@ const Login = () => {
   };
 
   return (
-    <Box sx={{ 
-      width: '100%',
-      maxWidth: '400px',
-      margin: '20px',
-      position: 'relative',
-      zIndex: 1
-    }}>
-      <Card sx={{ 
-        width: '100%',
-        borderRadius: 3,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      }}>
-        <CardContent sx={{ p: 4 }}>
-          <Box sx={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            mb: 4 
-          }}>
-            <Box sx={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              backgroundColor: 'primary.main',
+    <Box
+      sx={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+      }}
+    >
+      <Card
+        sx={{
+          width: '90%',
+          maxWidth: '400px',
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
+          <Box
+            sx={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'center',
-              mb: 2
-            }}>
+              mb: 4,
+            }}
+          >
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                backgroundColor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2,
+              }}
+            >
               <LocalHospital sx={{ fontSize: 40, color: 'white' }} />
             </Box>
             <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
@@ -159,37 +171,6 @@ const Login = () => {
           </Box>
         </CardContent>
       </Card>
-      
-      {/* Dekoratif resimler - şimdilik kapalı
-      <Box
-        component="img"
-        src={`${process.env.PUBLIC_URL}/assets/tooth-decoration-1.png`}
-        sx={{
-          position: 'absolute',
-          top: -50,
-          right: -40,
-          width: 100,
-          height: 100,
-          opacity: 0.8,
-          transform: 'rotate(15deg)',
-          zIndex: -1
-        }}
-      />
-      <Box
-        component="img"
-        src={`${process.env.PUBLIC_URL}/assets/tooth-decoration-2.png`}
-        sx={{
-          position: 'absolute',
-          bottom: -30,
-          left: -30,
-          width: 80,
-          height: 80,
-          opacity: 0.8,
-          transform: 'rotate(-20deg)',
-          zIndex: -1
-        }}
-      />
-      */}
     </Box>
   );
 };
