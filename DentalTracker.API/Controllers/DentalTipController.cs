@@ -1,25 +1,41 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using DentalTracker.API.Data;
+using DentalTracker.API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DentalTracker.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class DentalTipController : ControllerBase
 {
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<DentalTipController> _logger;
+    private readonly Random _random;
 
-    public DentalTipController(ILogger<DentalTipController> logger)
+    public DentalTipController(ApplicationDbContext context, ILogger<DentalTipController> logger)
     {
+        _context = context;
         _logger = logger;
+        _random = new Random();
     }
 
     [HttpGet("random")]
-    public IActionResult GetRandomTip()
+    public async Task<IActionResult> GetRandomTip()
     {
         try
         {
-            // TODO: Get random active tip from database
-            return Ok(new { message = "Öneri başarıyla getirildi" });
+            var activeTips = await _context.DentalTips
+                .Where(t => t.IsActive)
+                .ToListAsync();
+
+            if (!activeTips.Any())
+                return NotFound(new { message = "Aktif öneri bulunamadı" });
+
+            var randomTip = activeTips[_random.Next(activeTips.Count)];
+            return Ok(randomTip);
         }
         catch (Exception ex)
         {
@@ -29,12 +45,16 @@ public class DentalTipController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAllTips()
+    public async Task<IActionResult> GetAllTips()
     {
         try
         {
-            // TODO: Get all active tips from database
-            return Ok(new { message = "Öneriler başarıyla getirildi" });
+            var tips = await _context.DentalTips
+                .Where(t => t.IsActive)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return Ok(tips);
         }
         catch (Exception ex)
         {

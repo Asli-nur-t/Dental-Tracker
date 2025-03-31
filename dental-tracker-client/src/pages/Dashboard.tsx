@@ -1,81 +1,68 @@
-import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Grid, Paper, CircularProgress } from '@mui/material';
+import { useState } from 'react';
+import {
+  Box,
+  Container,
+  Tabs,
+  Tab,
+  Paper,
+} from '@mui/material';
+import StatusTab from '../components/dashboard/StatusTab';
+import GoalsTab from '../components/dashboard/GoalsTab';
 
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`dashboard-tabpanel-${index}`}
+      aria-labelledby={`dashboard-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
 }
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [tabValue, setTabValue] = useState(0); // 0: Durum, 1: Hedefler
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      setUser(JSON.parse(userStr));
-    }
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Typography variant="h6" sx={{ textAlign: 'center', mt: 4 }}>
-        Kullanıcı bilgileri yüklenemedi
-      </Typography>
-    );
-  }
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Hoş geldiniz, {user.firstName}!
-      </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8} lg={9}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 240,
-            }}
+      <Paper sx={{ p: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange}
+            aria-label="dashboard tabs"
           >
-            <Typography variant="h6" gutterBottom>
-              Aktiviteleriniz
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Henüz bir aktivite eklenmemiş.
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={4} lg={3}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 240,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Günlük İpuçları
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Düzenli diş fırçalama alışkanlığı edinmek için her gün aynı saatlerde fırçalamayı deneyin.
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
+            <Tab label="Durum" />
+            <Tab label="Hedefler" />
+          </Tabs>
+        </Box>
+
+        <TabPanel value={tabValue} index={0}>
+          <StatusTab />
+        </TabPanel>
+        <TabPanel value={tabValue} index={1}>
+          <GoalsTab />
+        </TabPanel>
+      </Paper>
     </Container>
   );
 };
