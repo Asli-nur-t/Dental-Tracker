@@ -8,8 +8,10 @@ import {
   Typography,
   Link,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Paper
 } from '@mui/material';
+import { FaTooth, FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -31,13 +33,12 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/dashboard'); // Ana sayfaya yönlendir
+        navigate('/dashboard');
       } else {
         setError(data.message);
       }
@@ -49,68 +50,63 @@ const Login = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography component="h1" variant="h5">
+    <Container component="main" maxWidth="xs" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <Paper elevation={3} sx={{ padding: 4, textAlign: 'center', borderRadius: 3, backgroundColor: '#e3f2fd', maxWidth: 400, width: '100%' }}>
+        <FaTooth size={50} color="#1976d2" style={{ marginBottom: 10 }} />
+        <Typography component="h1" variant="h5" sx={{ color: '#1976d2' }}>
           Giriş Yap
         </Typography>
         {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Adresi"
-            name="email"
-            autoComplete="email"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Parola"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-          />
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', borderRadius: 1, padding: 1, mb: 2 }}>
+            <FaEnvelope color="#1976d2" style={{ marginRight: 8 }} />
+            <TextField
+              required
+              fullWidth
+              label="Email Adresi"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              variant="standard"
+            />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', borderRadius: 1, padding: 1, mb: 2 }}>
+            <FaLock color="#1976d2" style={{ marginRight: 8 }} />
+            <TextField
+              required
+              fullWidth
+              label="Parola"
+              type="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              variant="standard"
+            />
+          </Box>
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 2, mb: 2, backgroundColor: '#1976d2' }}
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} /> : 'Giriş Yap'}
           </Button>
           <Box sx={{ textAlign: 'center' }}>
-            <Link href="/register" variant="body2">
+            <Link href="/register" variant="body2" sx={{ color: '#1976d2' }}>
               {"Hesabınız yok mu? Kayıt olun"}
             </Link>
             <br />
-            <Link href="/reset-password" variant="body2">
+            <Link href="/reset-password" variant="body2" sx={{ color: '#1976d2' }}>
               {"Parolanızı mı unuttunuz?"}
             </Link>
           </Box>
         </Box>
-      </Box>
+      </Paper>
     </Container>
   );
 };
 
-export default Login; 
+export default Login;
