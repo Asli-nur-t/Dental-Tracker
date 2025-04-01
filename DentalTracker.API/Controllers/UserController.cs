@@ -202,13 +202,26 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("profile")]
-    public IActionResult GetProfile()
+    public async Task<IActionResult> GetUserProfile()
     {
         try
         {
-            // TODO: Get user ID from JWT token
-            // TODO: Get user profile from database
-            return Ok(new { message = "Profil bilgileri başarıyla getirildi" });
+            var userId = GetUserIdFromToken();
+            var user = await _context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FirstName,
+                    u.LastName,
+                    u.Email,
+                    u.BirthDate
+                })
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return NotFound(new { message = "Kullanıcı bulunamadı" });
+
+            return Ok(user);
         }
         catch (Exception ex)
         {
@@ -259,6 +272,15 @@ public class UserController : ControllerBase
             _logger.LogError(ex, "Parola güncellenirken hata oluştu");
             return BadRequest(new { message = "Parola güncellenemedi" });
         }
+    }
+
+    private Guid GetUserIdFromToken()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new UnauthorizedAccessException("Kullanıcı kimliği bulunamadı");
+
+        return Guid.Parse(userIdClaim.Value);
     }
 
     private bool IsValidEmail(string email)
