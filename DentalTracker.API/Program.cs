@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using DentalTracker.API.Data;
 using DentalTracker.API.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +25,33 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-                .WithOrigins("http://localhost:5173") // React dev server port
+                .SetIsOriginAllowed(_ => true) // Geliştirme aşamasında tüm originlere izin ver
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .AllowAnyHeader()
+                .AllowCredentials();
         });
 });
 
+// JWT Authentication yapılandırması
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured")))
+        };
+    });
+
 var app = builder.Build();
+
+// Port numarasını açıkça belirt
+app.Urls.Add("http://localhost:5164");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -39,6 +62,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("ReactApp");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

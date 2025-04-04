@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using DentalTracker.API.Data;
 using DentalTracker.API.Models;
 using BCrypt.Net;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace DentalTracker.API.Controllers;
 
@@ -12,11 +16,13 @@ public class UserController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<UserController> _logger;
+    private readonly IConfiguration _configuration;
 
-    public UserController(ApplicationDbContext context, ILogger<UserController> logger)
+    public UserController(ApplicationDbContext context, ILogger<UserController> logger, IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
+        _configuration = configuration;
     }
 
     [HttpPost("register")]
@@ -60,8 +66,11 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Kayıt sırasında hata oluştu");
-            return BadRequest(new { message = "Kayıt işlemi başarısız" });
+            _logger.LogError(ex, "Kayıt sırasında hata oluştu: {Message}", ex.Message);
+            return StatusCode(500, new { 
+                message = "Kayıt işlemi sırasında bir hata oluştu",
+                error = ex.Message 
+            });
         }
     }
 
@@ -70,19 +79,27 @@ public class UserController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Login isteği alındı: {Email}", request.Email); // Debug için
+
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            {
                 return BadRequest(new { message = "Email ve parola alanları zorunludur" });
+            }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             
             if (user == null)
-                return BadRequest(new { message = "Kullanıcı bulunamadı" });
+            {
+                return BadRequest(new { message = "Email veya parola hatalı" });
+            }
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-                return BadRequest(new { message = "Parola hatalı" });
+            {
+                return BadRequest(new { message = "Email veya parola hatalı" });
+            }
 
-            // TODO: Generate proper JWT token
-            var token = "test_token";
+            var token = GenerateJwtToken(user);
+            _logger.LogInformation("Login başarılı: {Email}", request.Email); // Debug için
 
             return Ok(new { 
                 message = "Giriş başarılı", 
@@ -97,9 +114,37 @@ public class UserController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Giriş sırasında hata oluştu");
-            return BadRequest(new { message = "Giriş başarısız" });
+            _logger.LogError(ex, "Login sırasında hata oluştu: {Message}", ex.Message);
+            return StatusCode(500, new { 
+                message = "Giriş işlemi sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+                error = ex.Message 
+            });
         }
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var jwtKey = _configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.GivenName, user.FirstName),
+            new Claim(ClaimTypes.Surname, user.LastName)
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:DurationInMinutes"])),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     [HttpPost("verify-email")]
@@ -157,13 +202,26 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("profile")]
-    public IActionResult GetProfile()
+    public async Task<IActionResult> GetUserProfile()
     {
         try
         {
-            // TODO: Get user ID from JWT token
-            // TODO: Get user profile from database
-            return Ok(new { message = "Profil bilgileri başarıyla getirildi" });
+            var userId = GetUserIdFromToken();
+            var user = await _context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FirstName,
+                    u.LastName,
+                    u.Email,
+                    u.BirthDate
+                })
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return NotFound(new { message = "Kullanıcı bulunamadı" });
+
+            return Ok(user);
         }
         catch (Exception ex)
         {
@@ -214,6 +272,15 @@ public class UserController : ControllerBase
             _logger.LogError(ex, "Parola güncellenirken hata oluştu");
             return BadRequest(new { message = "Parola güncellenemedi" });
         }
+    }
+
+    private Guid GetUserIdFromToken()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            throw new UnauthorizedAccessException("Kullanıcı kimliği bulunamadı");
+
+        return Guid.Parse(userIdClaim.Value);
     }
 
     private bool IsValidEmail(string email)
@@ -272,15 +339,15 @@ public class ResetPasswordRequest
 
 public class UpdateProfileRequest
 {
-    public string Email { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
+    public required string Email { get; set; }
+    public required string FirstName { get; set; }
+    public required string LastName { get; set; }
     public DateTime BirthDate { get; set; }
 }
 
 public class ChangePasswordRequest
 {
-    public string CurrentPassword { get; set; }
-    public string NewPassword { get; set; }
-    public string ConfirmPassword { get; set; }
+    public required string CurrentPassword { get; set; }
+    public required string NewPassword { get; set; }
+    public required string ConfirmPassword { get; set; }
 } 

@@ -1,82 +1,50 @@
-import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Grid, Paper, CircularProgress } from '@mui/material';
-
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+import { useState } from 'react';
+import { Box, Paper } from '@mui/material';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import StatusTab from '../components/dashboard/StatusTab';
+import GoalsTab from '../components/dashboard/GoalsTab';
+import ProfilePage from '../components/profile/ProfilePage';
+import SideMenu from '../components/SideMenu';
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(true);
+  const location = useLocation();
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      setUser(JSON.parse(userStr));
-    }
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Typography variant="h6" sx={{ textAlign: 'center', mt: 4 }}>
-        Kullanıcı bilgileri yüklenemedi
-      </Typography>
-    );
-  }
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Hoş geldiniz, {user.firstName}!
-      </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8} lg={9}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 240,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Aktiviteleriniz
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Henüz bir aktivite eklenmemiş.
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={4} lg={3}>
-          <Paper
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 240,
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Günlük İpuçları
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Düzenli diş fırçalama alışkanlığı edinmek için her gün aynı saatlerde fırçalamayı deneyin.
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Container>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#f5f7f9', p: 3 }}>
+      <SideMenu isOpen={menuOpen} onToggle={toggleMenu} />
+      
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          transition: 'margin-left 0.3s ease',
+          marginLeft: menuOpen ? '280px' : 0,
+        }}
+      >
+        <Paper
+          elevation={4}
+          sx={{
+            borderRadius: '16px',
+            minHeight: 'calc(100vh - 48px)',
+            background: 'white',
+            overflow: 'hidden',
+            p: 3
+          }}
+        >
+          <Routes>
+            <Route index element={<StatusTab />} />
+            <Route path="goals" element={<GoalsTab />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="*" element={<StatusTab />} />
+          </Routes>
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 

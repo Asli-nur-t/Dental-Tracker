@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DentalTracker.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250317012745_InitialCreate")]
+    [Migration("20250331112851_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

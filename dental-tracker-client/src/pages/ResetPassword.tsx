@@ -1,56 +1,33 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Container,
-  Box,
+  Paper,
   TextField,
   Button,
   Typography,
+  Box,
   Alert,
   Link,
-  CircularProgress
+  InputAdornment,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
+import { Email } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 const ResetPassword = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
-
-  const validatePassword = (password: string) => {
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const isLongEnough = password.length >= 8;
-
-    return hasUpperCase && hasLowerCase && hasNumber && isLongEnough;
-  };
-
-  const handleVerifyEmail = async () => {
-    if (!email) {
-      setError('Email adresi zorunludur');
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError('Geçerli bir email adresi giriniz');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5164/api/user/verify-email', {
+      const response = await fetch('http://localhost:5164/api/Auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,154 +38,219 @@ const ResetPassword = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setIsEmailVerified(true);
-        setSuccess('Email doğrulandı. Yeni parolanızı belirleyebilirsiniz.');
+        setSuccess(true);
+        setError('');
       } else {
-        setError(data.message || 'Kullanıcı bulunamadı');
+        setError(data.message || 'Şifre sıfırlama işlemi başarısız');
       }
-    } catch (err) {
-      setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!validatePassword(newPassword)) {
-      setError('Parola en az 8 karakter uzunluğunda olmalı, büyük-küçük harf ve rakam içermelidir');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError('Parolalar eşleşmiyor');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('http://localhost:5164/api/user/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          newPassword,
-          confirmPassword
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Parolanız başarıyla güncellendi');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } else {
-        setError(data.message || 'Parola sıfırlama başarısız');
-      }
-    } catch (err) {
-      setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      setError('Bir hata oluştu');
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
+    <Container 
+      maxWidth={false}
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+        p: 2
+      }}
+    >
+      <Paper
+        elevation={24}
         sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          p: { xs: 3, sm: 6 },
+          width: '100%',
+          maxWidth: '450px',
+          borderRadius: 4,
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          animation: 'slideUp 0.5s ease-out',
+          '@keyframes slideUp': {
+            '0%': {
+              transform: 'translateY(20px)',
+              opacity: 0
+            },
+            '100%': {
+              transform: 'translateY(0)',
+              opacity: 1
+            }
+          }
         }}
       >
-        <Typography component="h1" variant="h5">
-          Parola Sıfırlama
-        </Typography>
+        <Box
+          sx={{
+            mb: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          <Logo size={isMobile ? "medium" : "large"} />
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 500,
+              textAlign: 'center',
+              animation: 'fadeIn 0.5s ease-in-out',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}
+          >
+            Şifre Sıfırlama
+          </Typography>
+        </Box>
+
         {error && (
-          <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              animation: 'shake 0.5s ease-in-out',
+              '@keyframes shake': {
+                '0%, 100%': { transform: 'translateX(0)' },
+                '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+                '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' }
+              }
+            }}
+          >
             {error}
           </Alert>
         )}
-        {success && (
-          <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
-            {success}
-          </Alert>
-        )}
-        <Box sx={{ mt: 3, width: '100%' }}>
-          {!isEmailVerified ? (
-            <>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email Adresi"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                onClick={handleVerifyEmail}
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Email Doğrula'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="newPassword"
-                label="Yeni Parola"
-                type="password"
-                id="newPassword"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={loading}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="confirmPassword"
-                label="Yeni Parola Tekrar"
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                onClick={handleResetPassword}
-                disabled={loading}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Parolayı Güncelle'}
-              </Button>
-            </>
-          )}
-          <Box sx={{ textAlign: 'center' }}>
-            <Link href="/login" variant="body2">
-              {"Giriş sayfasına dön"}
-            </Link>
+
+        {success ? (
+          <Box
+            sx={{
+              textAlign: 'center',
+              animation: 'fadeIn 0.5s ease-in-out'
+            }}
+          >
+            <Alert 
+              severity="success" 
+              sx={{ mb: 3 }}
+            >
+              Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.
+            </Alert>
+            <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
+              Lütfen e-posta kutunuzu kontrol edin ve şifrenizi sıfırlamak için gönderilen bağlantıya tıklayın.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/login')}
+              sx={{
+                py: 1.5,
+                px: 4,
+                borderRadius: 2,
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #1976d2 30%, #2196f3 90%)',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.3)'
+                }
+              }}
+            >
+              Giriş Sayfasına Dön
+            </Button>
           </Box>
-        </Box>
-      </Box>
+        ) : (
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit}
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 3
+            }}
+          >
+            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 2 }}>
+              Şifrenizi sıfırlamak için kayıtlı e-posta adresinizi girin.
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="E-posta"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              type="email"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email sx={{ color: 'action.active' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                  }
+                }
+              }}
+            />
+
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{
+                mt: 2,
+                py: 1.5,
+                borderRadius: 2,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #1976d2 30%, #2196f3 90%)',
+                transition: 'all 0.3s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(25, 118, 210, 0.3)'
+                }
+              }}
+            >
+              Şifremi Sıfırla
+            </Button>
+
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mt: 2
+              }}
+            >
+              <Link
+                href="/login"
+                sx={{
+                  color: 'text.secondary',
+                  textDecoration: 'none',
+                  fontWeight: 500,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    color: 'primary.main',
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                Giriş sayfasına dön
+              </Link>
+            </Box>
+          </Box>
+        )}
+      </Paper>
     </Container>
   );
 };
