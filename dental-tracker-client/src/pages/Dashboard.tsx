@@ -3,6 +3,7 @@ import { Box, Paper } from '@mui/material';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import StatusTab from '../components/dashboard/StatusTab';
 import GoalsTab from '../components/dashboard/GoalsTab';
+import ProfilePage from '../components/profile/ProfilePage';
 import SideMenu from '../components/SideMenu';
 
 const Dashboard = () => {
@@ -36,8 +37,9 @@ const Dashboard = () => {
           }}
         >
           <Routes>
-            <Route path="/" element={<StatusTab />} />
-            <Route path="/goals" element={<GoalsTab />} />
+            <Route index element={<StatusTab />} />
+            <Route path="goals" element={<GoalsTab />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="*" element={<StatusTab />} />
           </Routes>
         </Paper>

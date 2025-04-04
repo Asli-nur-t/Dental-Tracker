@@ -13,6 +13,8 @@ import {
   Checkbox,
   Alert,
   Chip,
+  Link,
+  Breadcrumbs,
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
@@ -21,7 +23,10 @@ import DailyTip from '../DailyTip';
 import {
   CalendarToday as CalendarIcon,
   PriorityHigh as PriorityIcon,
+  Person as PersonIcon,
+  LocalHospital as HospitalIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 interface Activity {
   id: string;
@@ -40,8 +45,11 @@ interface Goal {
 }
 
 const StatusTab = () => {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [lastGoal, setLastGoal] = useState<Goal | null>(null);
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTime, setSelectedTime] = useState<Date | null>(new Date());
   const [duration, setDuration] = useState('');
@@ -58,6 +66,23 @@ const StatusTab = () => {
     fetchRandomTip();
   }, []);
 
+  useEffect(() => {
+    if (goals.length > 0) {
+      setLastGoal(goals[goals.length - 1]);
+    }
+  }, [goals]);
+
+  useEffect(() => {
+    const completed = activities
+      .filter(activity => activity.isCompleted)
+      .map(activity => {
+        const goal = goals.find(g => g.id === activity.goalId);
+        return goal ? goal.title : '';
+      })
+      .filter(title => title !== '');
+    setCompletedTasks(completed);
+  }, [activities, goals]);
+
   const fetchLastSevenDaysActivities = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -68,7 +93,10 @@ const StatusTab = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setActivities(data);
+        const sortedActivities = data.sort((a: Activity, b: Activity) => 
+          new Date(b.activityDate).getTime() - new Date(a.activityDate).getTime()
+        );
+        setActivities(sortedActivities);
       }
     } catch (error) {
       console.error('Aktiviteler getirilirken hata oluştu:', error);
@@ -124,6 +152,8 @@ const StatusTab = () => {
   const handleActivitySubmit = async (goalId: string) => {
     try {
       const token = localStorage.getItem('token');
+      const isCompleted = completedGoals[goalId] || false;
+      
       const response = await fetch('http://localhost:5164/api/DentalActivity', {
         method: 'POST',
         headers: {
@@ -134,13 +164,13 @@ const StatusTab = () => {
           goalId,
           activityDate: selectedDate,
           duration: duration,
-          isCompleted: completedGoals[goalId] || false,
+          isCompleted: isCompleted,
         }),
       });
 
       if (response.ok) {
-        setSuccess('Aktivite başarıyla kaydedildi');
-        fetchLastSevenDaysActivities();
+        setSuccess(`Hedef ${isCompleted ? 'tamamlandı' : 'güncellendi'}`);
+        await fetchLastSevenDaysActivities();
         setDuration('');
         setCompletedGoals(prev => ({ ...prev, [goalId]: false }));
       } else {
@@ -202,26 +232,123 @@ const StatusTab = () => {
 
   return (
     <Box sx={{ width: '100%', p: { xs: 2, sm: 4 } }}>
+      {/* Navigasyon Linkleri */}
+      <Box sx={{ mb: 4 }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link
+            component="button"
+            variant="body1"
+            onClick={() => navigate('/dashboard/profile')}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              color: '#1976d2',
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            <PersonIcon /> Profil
+          </Link>
+          <Link
+            component="button"
+            variant="body1"
+            onClick={() => window.open('https://hsgm.saglik.gov.tr/tr/yasli-sagligi/agiz-ve-dis-sagligi.html', '_blank')}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              color: '#1976d2',
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            <HospitalIcon /> Ağız ve Diş Sağlığı
+          </Link>
+        </Breadcrumbs>
+      </Box>
+
       <Grid container spacing={4}>
         <Grid item xs={12}>
           <DailyTip />
         </Grid>
 
-        {/* Son 7 günlük aktiviteler */}
+        {/* Son 7 günlük aktiviteler ve Son Hedef */}
         <Grid item xs={12}>
           <Paper sx={{ p: 4, borderRadius: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-              Son 7 Gün Aktiviteleri
+            <Typography variant="h6" gutterBottom sx={{ mb: 3, color: '#1976d2' }}>
+              Son 7 Gün Özeti
             </Typography>
-            {activities.map((activity) => (
-              <Box key={activity.id} sx={{ mb: 2, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
-                <Typography>
-                  Tarih: {new Date(activity.activityDate).toLocaleDateString('tr-TR')}
-                  {' | '}Süre: {activity.duration}
-                  {' | '}Durum: {activity.isCompleted ? 'Tamamlandı' : 'Tamamlanmadı'}
+
+            {/* Son Hedef */}
+            {lastGoal && (
+              <Box sx={{ mb: 4, p: 3, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Son Eklenen Hedef
                 </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography variant="body1">
+                    {lastGoal.title}
+                  </Typography>
+                  <Chip
+                    label={getPriorityText(lastGoal.priority)}
+                    color={getPriorityColor(lastGoal.priority)}
+                    size="small"
+                    icon={<PriorityIcon />}
+                  />
+                </Box>
               </Box>
-            ))}
+            )}
+
+            {/* Aktiviteler Listesi */}
+            <Grid container spacing={2}>
+              {activities.map((activity) => {
+                const goal = goals.find(g => g.id === activity.goalId);
+                return (
+                  <Grid item xs={12} sm={6} md={4} key={activity.id}>
+                    <Card sx={{ 
+                      height: '100%',
+                      borderRadius: 2,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      border: activity.isCompleted ? '2px solid #4caf50' : 'none',
+                      backgroundColor: activity.isCompleted ? 'rgba(76, 175, 80, 0.05)' : 'white',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }
+                    }}>
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            {new Date(activity.activityDate).toLocaleDateString('tr-TR', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </Typography>
+                          <Chip
+                            label={activity.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
+                            color={activity.isCompleted ? 'success' : 'warning'}
+                            size="small"
+                            sx={{ 
+                              width: 'fit-content',
+                              fontWeight: 500,
+                              ml: 1
+                            }}
+                          />
+                        </Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>Hedef:</strong> {goal?.title || 'Bilinmiyor'}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>Süre:</strong> {activity.duration} dakika
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                );
+              })}
+            </Grid>
           </Paper>
         </Grid>
 
