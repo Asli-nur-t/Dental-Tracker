@@ -1,47 +1,57 @@
 import { useState, useEffect } from 'react';
 import { Box, Paper, Typography, Fade } from '@mui/material';
 import { LightbulbCircle } from '@mui/icons-material';
+import image1 from '../assets/1.jpg';
+import image2 from '../assets/2.jpg';
+import image3 from '../assets/3.jpg';
+import image4 from '../assets/4.jpg';
+import image5 from '../assets/5.jpg';
+import image6 from '../assets/6.jpg';
+import image7 from '../assets/7.jpg';
+import image8 from '../assets/8.jpg';
+import image9 from '../assets/9.jpg';
+import image10 from '../assets/10.jpg';
 
 const dentalTips = [
   {
     tip: "Dişlerinizi günde en az iki kez, 2 dakika boyunca fırçalayın.",
-    image: "/src/assets/alex-padurariu-7ByfI6Fpi90-unsplash.jpg"
+    image: image1
   },
   {
     tip: "Diş ipi kullanımı, diş aralarındaki plağı temizlemede fırçalamadan daha etkilidir.",
-    image: "/src/assets/engin-akyurt-b6CCEsofl90-unsplash.jpg"
+    image: image2
   },
   {
     tip: "Şekerli yiyecek ve içeceklerden sonra ağzınızı suyla çalkalayın.",
-    image: "/src/assets/alex-padurariu-7ByfI6Fpi90-unsplash.jpg"
+    image: image3
   },
   {
     tip: "Diş fırçanızı 3-4 ayda bir değiştirin.",
-    image: "/src/assets/engin-akyurt-b6CCEsofl90-unsplash.jpg"
+    image: image4
   },
   {
     tip: "Düzenli diş hekimi kontrollerinizi ihmal etmeyin, 6 ayda bir kontrol önerilir.",
-    image: "/src/assets/alex-padurariu-7ByfI6Fpi90-unsplash.jpg"
+    image: image5
   },
   {
     tip: "Yumuşak kıllı diş fırçası kullanın, sert fırçalar diş etlerinize zarar verebilir.",
-    image: "/src/assets/engin-akyurt-b6CCEsofl90-unsplash.jpg"
+    image: image6
   },
   {
     tip: "Asitli içeceklerden sonra hemen diş fırçalamayın, en az 30 dakika bekleyin.",
-    image: "/src/assets/alex-padurariu-7ByfI6Fpi90-unsplash.jpg"
+    image: image7
   },
   {
     tip: "Dişlerinizi dairesel hareketlerle, diş etlerinize zarar vermeden fırçalayın.",
-    image: "/src/assets/engin-akyurt-b6CCEsofl90-unsplash.jpg"
+    image: image8
   },
   {
     tip: "Diş ipi kullanırken her diş için temiz bir bölüm kullanın.",
-    image: "/src/assets/alex-padurariu-7ByfI6Fpi90-unsplash.jpg"
+    image: image9
   },
   {
     tip: "Ağız gargarası kullanımı, ağız bakımınızı destekler ancak fırçalamanın yerini tutmaz.",
-    image: "/src/assets/engin-akyurt-b6CCEsofl90-unsplash.jpg"
+    image: image10
   }
 ];
 
@@ -56,7 +66,7 @@ const DailyTip = () => {
         setCurrentTip(dentalTips[Math.floor(Math.random() * dentalTips.length)]);
         setShow(true);
       }, 500);
-    }, 10000); // Her 10 saniyede bir değişir
+    }, 5000); // Her 10 saniyede bir değişir
 
     return () => clearInterval(interval);
   }, []);
