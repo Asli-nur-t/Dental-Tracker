@@ -152,17 +152,24 @@ public class UserController : ControllerBase
     {
         try
         {
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest(new { message = "Email adresi boş olamaz" });
+            }
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             
             if (user == null)
+            {
                 return BadRequest(new { message = "Bu email adresi ile kayıtlı kullanıcı bulunamadı" });
+            }
 
             return Ok(new { message = "Email doğrulandı" });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Email doğrulama sırasında hata oluştu");
-            return BadRequest(new { message = "Email doğrulama işlemi başarısız" });
+            return StatusCode(500, new { message = "Email doğrulama sırasında bir hata oluştu" });
         }
     }
 
@@ -171,33 +178,34 @@ public class UserController : ControllerBase
     {
         try
         {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.NewPassword))
+            {
+                return BadRequest(new { message = "Email ve yeni parola alanları zorunludur" });
+            }
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             
             if (user == null)
+            {
                 return BadRequest(new { message = "Kullanıcı bulunamadı" });
+            }
 
             // Parola kriterleri kontrolü
             if (!IsValidPassword(request.NewPassword))
+            {
                 return BadRequest(new { message = "Parola en az 8 karakter uzunluğunda olmalı, büyük-küçük harf ve rakam içermelidir" });
+            }
 
-            // Parola eşleşme kontrolü
-            if (request.NewPassword != request.ConfirmPassword)
-                return BadRequest(new { message = "Parolalar eşleşmiyor" });
-
-            // Parolayı şifrele ve güncelle
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
             user.UpdatedAt = DateTime.UtcNow;
-
             await _context.SaveChangesAsync();
 
-            // TODO: Parola değişikliği hakkında email gönder
-
-            return Ok(new { message = "Parolanız başarıyla güncellendi" });
+            return Ok(new { message = "Parola başarıyla güncellendi" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Parola sıfırlama sırasında hata oluştu");
-            return BadRequest(new { message = "Parola sıfırlama işlemi başarısız" });
+            _logger.LogError(ex, "Parola güncellenirken hata oluştu");
+            return StatusCode(500, new { message = "Parola güncellenirken bir hata oluştu" });
         }
     }
 

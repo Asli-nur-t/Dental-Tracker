@@ -1,0 +1,3 @@
+"Id","Email","PasswordHash","FirstName","LastName","BirthDate","CreatedAt","UpdatedAt"
+"0195ebfc-7f46-72f8-b84b-5c6335019e44","deneme.123@gmail.com","$2a$11$Hang2iVJqPUCj9nnyYH3qubbMBhcAFtM9W5jZrf9oVRnlqpIUWq4q","aslı","topcu","2025-03-31 14:35:01.577+03","2025-03-31 14:35:48.281664+03",NULL
+"0195ec02-5574-7510-87b8-a23430cc7892","aslitopcu.131313@gmail.com","$2a$11$bfor3qHVrJpdhNts6gK6xeJBMSLm6VCuTodOYSlKPwvln/fg7.Fjy","Aslınur","Topcu","2002-07-13 00:00:00+03","2025-03-31 14:42:10.792537+03",NULL
