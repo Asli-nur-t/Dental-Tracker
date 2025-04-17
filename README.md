@@ -27,13 +27,15 @@ Dental Tracker, diş sağlığını takip etmek ve diş bakım alışkanlıklar�
 ## Ekran Görüntüleri
 
 ### Giriş Sayfası
-![Giriş Sayfası](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.56.29.png)
+![Giriş Sayfası](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.52.27.png)
+
 
 ### Kayıt Sayfası
-![Kayıt Sayfası](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.56.17.png)
+![Kayıt Sayfası](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.55.59.png)
 
 ### Dashboard
-![Dashboard](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.55.59.png)
+![Dashboard](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.52.56.png)
+
 
 ### Hedefler Sayfası
 ![Hedefler](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.55.18.png)
