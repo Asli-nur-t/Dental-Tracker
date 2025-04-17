@@ -8,8 +8,7 @@ Dental Tracker, diş sağlığını takip etmek ve diş bakım alışkanlıklar�
   - Kayıt olma
   - Giriş yapma
   - Şifre sıfırlama
-  - Profil yönetimi
-
+  
 - Diş Sağlığı Takibi
   - Günlük diş fırçalama takibi
   - Diş ipi kullanımı takibi
@@ -40,8 +39,11 @@ Dental Tracker, diş sağlığını takip etmek ve diş bakım alışkanlıklar�
 ### Hedefler Sayfası
 ![Hedefler](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.55.18.png)
 
-### Profil Sayfası
-![Profil](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.55.10.png)
+### Hedef Yönetimi
+![Profil](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.53.34.png)
+
+### Şifre Sıfırlama
+![Profil](./dental-tracker-ss/Ekran%20Resmi%202025-04-06%2023.56.29.png)
 
 ## Teknolojiler
 
